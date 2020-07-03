@@ -1,11 +1,11 @@
-defmodule Hcaptcha.Mixfile do
+defmodule Balenax.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :hcaptcha,
-      name: "hcaptcha",
-      source_url: "https://github.com/Sebi55/hcaptcha",
+      app: :balenax,
+      name: "balenax",
+      source_url: "https://github.com/Sebi55/balenax",
       version: "0.0.1",
       elixir: "~> 1.6",
       description: description(),
@@ -37,8 +37,7 @@ defmodule Hcaptcha.Mixfile do
 
   defp description do
     """
-    A simple hCaptcha package for Elixir applications, provides verification
-    and templates for rendering forms with the hCaptcha widget
+    A simple balenax package for Elixir applications, provides a wrapper around the balena API
     """
   end
 
@@ -58,7 +57,7 @@ defmodule Hcaptcha.Mixfile do
       files: ["lib", "mix.exs", "README.md", "LICENSE"],
       maintainers: ["Sebastian Grebe"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/Sebi55/hcaptcha", "Forked" => "https://github.com/samueljseay/recaptcha"}
+      links: %{"GitHub" => "https://github.com/Sebi55/balenax"}
     ]
   end
 end

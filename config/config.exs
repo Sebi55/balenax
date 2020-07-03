@@ -1,11 +1,10 @@
 use Mix.Config
 
-config :hcaptcha,
-  verify_url: "https://hcaptcha.com/siteverify",
-  timeout: 5000,
-  public_key: {:system, "HCAPTCHA_PUBLIC_KEY"},
-  secret: {:system, "HCAPTCHA_PRIVATE_KEY"}
+config :balenax,
+  api_url: "https://api.balena-cloud.com/v5",
+  api_key: {:system, "BALENA_API_KEY"}
+  timeout: 5000
 
-config :hcaptcha, :json_library, Jason
+config :balenax, :json_library, Jason
 
 import_config "#{Mix.env()}.exs"

@@ -7,7 +7,7 @@ An Elixir wrapper package for the Balena API [Balena].
 [Balena]: https://www.balena.io/docs/reference/api/overview/
 
 ### Important Notice
-The package is in active development. It is a side project required for the PlantGuru [PlantGuru] project which relies on Balena. Only the API endpoints needed for the development of PlantGuru are in active development. Please feel free to extend or improve this package with PRs at any time. I am happy to merge all compatible PRs.
+The package is in active development. It is a side project required for the [PlantGuru] project which relies on Balena. Only the API endpoints needed for the development of PlantGuru are in active development. Please feel free to extend or improve this package with PRs at any time. I am happy to merge all compatible PRs.
 
 [PlantGuru]: https://github.com/Plant-Guru
 
@@ -54,18 +54,18 @@ By default `balenax` will use `Jason` to decode JSON responses, this can be chan
 
 ### Device API
 
-Hcaptcha provides the `verify/2` method. Below is an example using a Phoenix controller action:
+Balenax provides the `get_device/1` method. Below is an example using a Phoenix controller action:
 
 ```elixir
   def create(conn, params) do
-    case Hcaptcha.verify(params["h-aptcha-response"]) do
+    case Balenax.get_device(params["uuid"]) do
       {:ok, response} -> do_something
       {:error, errors} -> handle_error
     end
   end
 ```
 
-`verify` method sends a `POST` request to the hCAPTCHA API and returns 2 possible values:
+`get_device` method sends a `GET` request to the balena API and returns 2 possible values:
 
 `{:ok, %Hcaptcha.Response{challenge_ts: timestamp, hostname: host}}` -> The captcha is valid, see the [documentation](https://developers.google.com/hcaptcha/docs/verify#api-response) for more details.
 

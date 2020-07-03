@@ -1,39 +1,35 @@
-defmodule Hcaptcha do
+defmodule Balenax do
   @moduledoc """
-    A module for verifying hCAPTCHA version 2.0 response strings.
+    A wrapper module for the balena API.
 
-    See the [documentation](https://developers.google.com/hcaptcha/docs/verify)
     for more details.
   """
 
-  alias Hcaptcha.{Config, Http, Response}
-
-  @http_client Application.get_env(:hcaptcha, :http_client, Http)
+  alias Balenax.{Config, Http}
+require Logger
+  @http_client Application.get_env(:balenax, :http_client, Http)
 
   @doc """
-  Verifies a hCAPTCHA response string.
+  Verifies a Balenax response string.
 
   ## Options
 
     * `:timeout` - the timeout for the request (defaults to 5000ms)
-    * `:secret`  - the secret key used by hcaptcha (defaults to the secret
+    * `:api_key`  - the secret key used by balena (defaults to the secret
       provided in application config)
-    * `:remote_ip` - the IP address of the user (optional and not set by default)
 
   ## Example
 
-    {:ok, api_response} = Hcaptcha.verify("response_string")
+    {:ok, api_response} = Balenax.get_device("uuid")
   """
-  @spec verify(String.t(), Keyword.t()) ::
-          {:ok, Response.t()} | {:error, [atom]}
-  def verify(response, options \\ []) do
-    verification =
-      @http_client.request_verification(
-        request_body(response, options),
+  def get_device_by_uuid(balena_uuid, options \\ []) do
+    device =
+      @http_client.get_device_by_uuid(
+        balena_uuid,
         Keyword.take(options, [:timeout])
       )
-
-    case verification do
+    Logger.debug inspect(device)
+    case device do
       {:error, errors} ->
         {:error, errors}
 
@@ -42,7 +38,7 @@ defmodule Hcaptcha do
 
       {:ok,
        %{"success" => true, "challenge_ts" => timestamp, "hostname" => host}} ->
-        {:ok, %Response{challenge_ts: timestamp, hostname: host}}
+        {:ok, %{challenge_ts: timestamp, hostname: host}}
 
       {:ok,
        %{"success" => false, "challenge_ts" => _timestamp, "hostname" => _host}} ->
@@ -50,20 +46,18 @@ defmodule Hcaptcha do
     end
   end
 
-  defp request_body(response, options) do
-    body_options = Keyword.take(options, [:remote_ip, :secret])
-    application_options = [secret: Config.get_env(:hcaptcha, :secret)]
+  # defp request_body(response, options) do
+  #   body_options = Keyword.take(options, [:remote_ip, :secret])
+  #   application_options = [secret: Config.get_env(:balenax, :secret)]
 
-    # override application secret with options secret if it exists
-    application_options
-    |> Keyword.merge(body_options)
-    |> Keyword.put(:response, response)
-    |> URI.encode_query()
-  end
+  #   # override application secret with options secret if it exists
+  #   application_options
+  #   |> Keyword.merge(body_options)
+  #   |> Keyword.put(:response, response)
+  #   |> URI.encode_query()
+  # end
 
   defp atomise_api_error(error) do
-    # See why we are using `to_atom` here:
-    # https://github.com/samueljseay/hcaptcha/pull/28#issuecomment-313604733
     error
     |> String.replace("-", "_")
     |> String.to_atom()

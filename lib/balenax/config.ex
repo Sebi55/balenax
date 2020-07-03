@@ -1,4 +1,4 @@
-defmodule Hcaptcha.Config do
+defmodule Balenax.Config do
   @moduledoc """
   Provides application/system environment variable lookup at runtime
   """

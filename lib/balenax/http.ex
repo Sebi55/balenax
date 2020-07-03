@@ -1,22 +1,19 @@
-defmodule Hcaptcha.Http do
+defmodule Balenax.Http do
   @moduledoc """
-   Responsible for managing HTTP requests to the hCAPTCHA API
+   Responsible for managing HTTP requests to the balena API
   """
 
-  alias Hcaptcha.Config
+  alias Balenax.Config
 
   @headers [
     {"Content-type", "application/x-www-form-urlencoded"},
     {"Accept", "application/json"}
   ]
 
-  @default_verify_url "https://hcaptcha.com/siteverify"
+  @default_api_url "https://api.balena-cloud.com/v5"
 
   @doc """
-  Sends an HTTP request to the hCAPTCHA version 2.0 API.
-
-  See the [docs](https://developers.google.com/hcaptcha/docs/verify#api-response)
-  for more details on the API response.
+  Sends an HTTP request to the Balena API to get the device by id
 
   ## Options
 
@@ -29,22 +26,23 @@ defmodule Hcaptcha.Http do
       "challenge_ts" => ts,
       "hostname" => host,
       "error-codes" => errors
-    }} = Hcaptcha.Http.request_verification(%{
+    }} = Balenax.Http.get_device(%{
       secret: "secret",
       response: "response",
       remote_ip: "remote_ip"
     })
   """
-  @spec request_verification(binary, timeout: integer) ::
+  @spec get_device_by_uuid(timeout: integer) ::
           {:ok, map} | {:error, [atom]}
-  def request_verification(body, options \\ []) do
-    timeout = options[:timeout] || Config.get_env(:hcaptcha, :timeout, 5000)
-    url = Config.get_env(:hcaptcha, :verify_url, @default_verify_url)
-    json = Application.get_env(:hcaptcha, :json_library, Jason)
+  def get_device_by_uuid(balena_uuid, options \\ []) do
+    timeout = options[:timeout] || Config.get_env(:balenax, :timeout, 5000)
+    url = Enum.join([Config.get_env(:balenax, :api_url, @default_api_url), "device"], "/")
+    url = Enum.join([url, "?$filter=uuid%20eq%20'", balena_uuid, "'"], "")
+    json = Application.get_env(:balenax, :json_library, Jason)
 
     result =
       with {:ok, response} <-
-             HTTPoison.post(url, body, @headers, timeout: timeout),
+             HTTPoison.get(url, @headers, timeout: timeout),
            {:ok, data} <- json.decode(response.body) do
         {:ok, data}
       end
@@ -54,6 +52,7 @@ defmodule Hcaptcha.Http do
       {:error, :invalid} -> {:error, [:invalid_api_response]}
       {:error, {:invalid, _reason}} -> {:error, [:invalid_api_response]}
       {:error, %{reason: reason}} -> {:error, [reason]}
+      {:error, %Jason.DecodeError{data: reason, position: _position}} -> {:error, [reason]}
     end
   end
 end
