@@ -4,7 +4,7 @@ defmodule Balenax.Http do
   """
 
   alias Balenax.Config
-
+require Logger
   @headers [
     {"Content-type", "application/x-www-form-urlencoded"},
     {"Accept", "application/json"}
@@ -39,14 +39,15 @@ defmodule Balenax.Http do
     url = Enum.join([Config.get_env(:balenax, :api_url, @default_api_url), "device"], "/")
     url = Enum.join([url, "?$filter=uuid%20eq%20'", balena_uuid, "'"], "")
     json = Application.get_env(:balenax, :json_library, Jason)
+    headers = @headers ++ [{"Authorization", "Bearer " <> Config.get_env(:balenax, :api_key)}]
 
     result =
       with {:ok, response} <-
-             HTTPoison.get(url, @headers, timeout: timeout),
-           {:ok, data} <- json.decode(response.body) do
+            HTTPoison.get(url, headers, timeout: timeout),
+          {:ok, data} <- json.decode(response.body) do
         {:ok, data}
       end
-
+Logger.debug inspect(result)
     case result do
       {:ok, data} -> {:ok, data}
       {:error, :invalid} -> {:error, [:invalid_api_response]}
