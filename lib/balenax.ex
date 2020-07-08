@@ -38,4 +38,44 @@ defmodule Balenax do
         {:ok, data}
     end
   end
+
+  def get_device_by_id(balena_uuid, options \\ []) do
+    device =
+      @http_client.get_device_by_id(
+        balena_uuid,
+        Keyword.take(options, [:timeout])
+      )
+
+    case device do
+      {:error, errors} ->
+        {:error, errors}
+      {:ok, %{"d" => []}} ->
+        {:error, %{error: "No device found"}}
+      {:ok, data} ->
+        {:ok, data}
+    end
+  end
+
+  def create_device_env_variable(body, options \\ []) do
+    device =
+      @http_client.create_device_env_variable(
+        request_body(body),
+        Keyword.take(options, [:timeout])
+      )
+
+    case device do
+      {:error, errors} ->
+        {:error, errors}
+      {:ok, %{"d" => []}} ->
+        {:error, %{error: "No device found"}}
+      {:ok, data} ->
+        {:ok, data}
+    end
+  end
+
+  defp request_body(body) do
+    body
+    |> URI.encode_query()
+  end
+
 end

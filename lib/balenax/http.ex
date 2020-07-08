@@ -47,8 +47,57 @@ require Logger
           {:ok, data} <- json.decode(response.body) do
         {:ok, data}
       end
+
+      case result do
+      {:ok, data} -> {:ok, data}
+      {:error, :invalid} -> {:error, [:invalid_api_response]}
+      {:error, {:invalid, _reason}} -> {:error, [:invalid_api_response]}
+      {:error, %{reason: reason}} -> {:error, [reason]}
+      {:error, %Jason.DecodeError{data: reason, position: _position}} -> {:error, [reason]}
+    end
+  end
+
+  @spec get_device_by_id(timeout: integer) ::
+          {:ok, map} | {:error, [atom]}
+  def get_device_by_id(balena_id, options \\ []) do
+    timeout = options[:timeout] || Config.get_env(:balenax, :timeout, 5000)
+    url = Enum.join([Config.get_env(:balenax, :api_url, @default_api_url), "device"], "/")
+    url = Enum.join([url, "(", balena_id, ")"], "")
+    json = Application.get_env(:balenax, :json_library, Jason)
+    headers = @headers ++ [{"Authorization", "Bearer " <> Config.get_env(:balenax, :api_key)}]
+
+    result =
+      with {:ok, response} <-
+            HTTPoison.get(url, headers, timeout: timeout),
+          {:ok, data} <- json.decode(response.body) do
+        {:ok, data}
+      end
+
+      case result do
+      {:ok, data} -> {:ok, data}
+      {:error, :invalid} -> {:error, [:invalid_api_response]}
+      {:error, {:invalid, _reason}} -> {:error, [:invalid_api_response]}
+      {:error, %{reason: reason}} -> {:error, [reason]}
+      {:error, %Jason.DecodeError{data: reason, position: _position}} -> {:error, [reason]}
+    end
+  end
+
+  @spec create_device_env_variable(timeout: integer) ::
+          {:ok, map} | {:error, [atom]}
+  def create_device_env_variable(body, options \\ []) do
+    timeout = options[:timeout] || Config.get_env(:balenax, :timeout, 5000)
+    url = Enum.join([Config.get_env(:balenax, :api_url, @default_api_url), "device_environment_variable"], "/")
+    json = Application.get_env(:balenax, :json_library, Jason)
+    headers = @headers ++ [{"Authorization", "Bearer " <> Config.get_env(:balenax, :api_key)}]
+
+    result =
+      with {:ok, response} <-
+            HTTPoison.post(url, body, headers, timeout: timeout),
+          {:ok, data} <- json.decode(response.body) do
+        {:ok, data}
+      end
 Logger.debug inspect(result)
-    case result do
+      case result do
       {:ok, data} -> {:ok, data}
       {:error, :invalid} -> {:error, [:invalid_api_response]}
       {:error, {:invalid, _reason}} -> {:error, [:invalid_api_response]}
