@@ -68,6 +68,8 @@ defmodule Balenax do
         {:error, errors}
       {:ok, %{"d" => []}} ->
         {:error, %{error: "No device found"}}
+      {:ok, "Unique key constraint violated"} ->
+        {:error, %{error: "Unique key constraint violated"}}
       {:ok, data} ->
         {:ok, data}
     end
